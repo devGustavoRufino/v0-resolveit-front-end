@@ -7,6 +7,8 @@ import { DashboardPage } from "@/components/pages/dashboard-page"
 import { AssetsPage } from "@/components/pages/assets-page"
 import { IncidentPage } from "@/components/pages/incident-page"
 import { TopologyPage } from "@/components/pages/topology-page"
+import { StoreProvider } from "@/lib/store"
+import { ToastProvider } from "@/lib/toast"
 
 const META: Record<Page, { title: string; subtitle: string }> = {
   dashboard: { title: "Dashboard", subtitle: "Visão geral do ambiente de TI" },
@@ -20,17 +22,21 @@ export function AppShell() {
   const meta = META[page]
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar current={page} onNavigate={setPage} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Topbar title={meta.title} subtitle={meta.subtitle} />
-        <main className="flex-1 overflow-y-auto">
-          {page === "dashboard" && <DashboardPage />}
-          {page === "ativos" && <AssetsPage />}
-          {page === "incidente" && <IncidentPage />}
-          {page === "topologia" && <TopologyPage />}
-        </main>
-      </div>
-    </div>
+    <ToastProvider>
+      <StoreProvider>
+        <div className="flex h-screen overflow-hidden bg-background">
+          <Sidebar current={page} onNavigate={setPage} />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <Topbar title={meta.title} subtitle={meta.subtitle} onNavigate={setPage} />
+            <main className="flex-1 overflow-y-auto">
+              {page === "dashboard" && <DashboardPage />}
+              {page === "ativos" && <AssetsPage />}
+              {page === "incidente" && <IncidentPage onNavigate={setPage} />}
+              {page === "topologia" && <TopologyPage />}
+            </main>
+          </div>
+        </div>
+      </StoreProvider>
+    </ToastProvider>
   )
 }

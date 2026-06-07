@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { ArrowRight, Server, Router, Wifi, Laptop, ShieldAlert, Network as NetworkIcon } from "lucide-react"
-import { getConnections, type Connection } from "@/lib/api"
+import { useStore } from "@/lib/store"
 
 function deviceIcon(type: string) {
   switch (type) {
@@ -39,15 +38,7 @@ function DeviceNode({ name, type }: { name: string; type: string }) {
 }
 
 export function TopologyPage() {
-  const [connections, setConnections] = useState<Connection[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    getConnections().then((data) => {
-      setConnections(data)
-      setLoading(false)
-    })
-  }, [])
+  const { connections, loading } = useStore()
 
   return (
     <div className="space-y-6 p-8">

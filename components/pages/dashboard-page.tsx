@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Server, AlertTriangle, RefreshCw, CheckCircle2, TrendingUp } from "lucide-react"
-import { getAssets, getIntegrationLogs, type Asset, type IntegrationLog } from "@/lib/api"
+import { useStore } from "@/lib/store"
 import { StatusBadge } from "@/components/status-badge"
 import { cn } from "@/lib/utils"
 
@@ -43,21 +43,28 @@ function StatCard({
   )
 }
 
-export function DashboardPage() {
-  const [assets, setAssets] = useState<Asset[]>([])
-  const [logs, setLogs] = useState<IntegrationLog[]>([])
-  const [loading, setLoading] = useState(true)
+// Relógio dinâmico — atualiza a cada segundo
+function LiveClock() {
+  const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
-    Promise.all([getAssets(), getIntegrationLogs()]).then(([a, l]) => {
-      setAssets(a)
-      setLogs(l)
-      setLoading(false)
-    })
+    const timer = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(timer)
   }, [])
 
-  const openIncidents = 7
-  const lastSync = "07/06/2026 09:42"
+  const date = now.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+  const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className="font-mono text-2xl font-bold tabular-nums text-foreground">{time}</span>
+      <span className="text-sm text-muted-foreground">{date}</span>
+    </div>
+  )
+}
+
+export function DashboardPage() {
+  const { assets, logs, openIncidents, loading } = useStore()
 
   return (
     <div className="space-y-6 p-8">
@@ -76,12 +83,26 @@ export function DashboardPage() {
           hint="Em acompanhamento no ServiceNow"
           icon={AlertTriangle}
         />
-        <StatCard
-          label="Última Sincronização"
-          value={lastSync}
-          hint="Integração executada com sucesso"
-          icon={RefreshCw}
-        />
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Última Sincronização</p>
+              <div className="mt-2">
+                <LiveClock />
+              </div>
+            </div>
+            <div className="flex size-11 items-center justify-center rounded-lg bg-secondary text-foreground">
+              <RefreshCw className="size-5" />
+            </div>
+          </div>
+          <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-primary" />
+            </span>
+            Integração em tempo real com o ServiceNow
+          </p>
+        </div>
       </div>
 
       {/* Logs de integração */}
@@ -108,7 +129,7 @@ export function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {logs.map((log) => (
+              {logs.slice(0, 8).map((log) => (
                 <tr key={log.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/40">
                   <td className="px-6 py-3.5 font-mono text-xs text-muted-foreground">{log.timestamp}</td>
                   <td className="px-6 py-3.5 text-foreground">{log.action}</td>

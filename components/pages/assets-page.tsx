@@ -1,33 +1,26 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { Plus, Search, Server } from "lucide-react"
-import { getAssets, type Asset } from "@/lib/api"
+import { useStore } from "@/lib/store"
 import { StatusBadge } from "@/components/status-badge"
 import { AssetModal } from "@/components/asset-modal"
 
 export function AssetsPage() {
-  const [assets, setAssets] = useState<Asset[]>([])
+  const { assets, loading } = useStore()
   const [query, setQuery] = useState("")
-  const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
-
-  useEffect(() => {
-    getAssets().then((data) => {
-      setAssets(data)
-      setLoading(false)
-    })
-  }, [])
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
     if (!q) return assets
+    // Filtra por nome ou IP enquanto o usuário digita
     return assets.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
+        a.ip.toLowerCase().includes(q) ||
         a.id.toLowerCase().includes(q) ||
         a.type.toLowerCase().includes(q) ||
-        a.ip.toLowerCase().includes(q) ||
         a.owner.toLowerCase().includes(q),
     )
   }, [assets, query])
@@ -42,7 +35,7 @@ export function AssetsPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Pesquisar ativos..."
+              placeholder="Pesquisar por nome ou IP..."
               className="w-full rounded-lg border border-border bg-input py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
@@ -105,11 +98,7 @@ export function AssetsPage() {
         </div>
       </div>
 
-      <AssetModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreated={(asset) => setAssets((prev) => [asset, ...prev])}
-      />
+      <AssetModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
   )
 }
