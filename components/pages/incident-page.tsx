@@ -1,56 +1,44 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2, Zap, CheckCircle2, AlertTriangle, X } from "lucide-react"
-import { getAssets, createIncident, type Asset } from "@/lib/api"
+import { Loader2, Zap, AlertTriangle } from "lucide-react"
+import { useStore } from "@/lib/store"
+import { useToast } from "@/lib/toast"
+import type { Page } from "@/components/sidebar"
 
-export function IncidentPage() {
-  const [assets, setAssets] = useState<Asset[]>([])
+export function IncidentPage({ onNavigate }: { onNavigate: (page: Page) => void }) {
+  const { assets, openIncident } = useStore()
+  const { push } = useToast()
   const [assetId, setAssetId] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
-    getAssets().then((data) => {
-      setAssets(data)
-      if (data[0]) setAssetId(data[0].id)
-    })
-  }, [])
+    if (!assetId && assets[0]) setAssetId(assets[0].id)
+  }, [assets, assetId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!assetId || !description.trim()) return
-    setSuccess(null)
     setLoading(true)
-    // POST /incidents — a API Flask faz a ponte com o ServiceNow
-    const res = await createIncident({ assetId, description })
+    // Gera o incidente no estado global (ponte com o ServiceNow via Flask)
+    const ticket = await openIncident(assetId, description)
     setLoading(false)
-    setSuccess(res.message)
+    // Notificação de sucesso
+    push({
+      type: "success",
+      title: "Incidente gerado com sucesso!",
+      description: `Chamado ${ticket} gerado com sucesso no ServiceNow.`,
+    })
+    // Limpa o formulário
     setDescription("")
+    // Volta ao dashboard, onde o novo log aparece no topo
+    onNavigate("dashboard")
   }
 
   return (
     <div className="p-8">
       <div className="mx-auto max-w-2xl space-y-6">
-        {/* Alerta de sucesso */}
-        {success && (
-          <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/10 px-5 py-4">
-            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" />
-            <div className="flex-1">
-              <p className="font-semibold text-primary">Incidente gerado com sucesso!</p>
-              <p className="text-sm text-foreground/90">{success}</p>
-            </div>
-            <button
-              onClick={() => setSuccess(null)}
-              className="text-primary/70 transition-colors hover:text-primary"
-              aria-label="Fechar alerta"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-        )}
-
         {/* Card do formulário */}
         <div className="rounded-xl border border-border bg-card">
           <div className="flex items-center gap-3 border-b border-border px-6 py-4">

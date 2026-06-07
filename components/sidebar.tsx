@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Server, AlertTriangle, Network, ShieldCheck, CircleDot } from "lucide-react"
+import { LayoutDashboard, Server, AlertTriangle, Network, ShieldCheck } from "lucide-react"
 
 export type Page = "dashboard" | "ativos" | "incidente" | "topologia"
 
@@ -61,11 +61,14 @@ export function Sidebar({ current, onNavigate }: SidebarProps) {
 
       {/* Status da integração */}
       <div className="border-t border-sidebar-border p-4">
-        <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent px-3 py-2.5">
-          <CircleDot className="size-4 text-primary" />
+        <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent px-3 py-2.5">
+          <span className="relative flex size-2.5 shrink-0">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex size-2.5 rounded-full bg-primary" />
+          </span>
           <div className="leading-tight">
-            <p className="text-xs font-medium text-sidebar-foreground">ServiceNow</p>
-            <p className="text-xs text-primary">Conectado</p>
+            <p className="text-xs font-medium text-sidebar-foreground">ServiceNow Conectado</p>
+            <p className="text-xs text-muted-foreground">Integração ativa</p>
           </div>
         </div>
       </div>

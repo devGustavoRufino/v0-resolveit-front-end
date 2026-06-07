@@ -2,17 +2,19 @@
 
 import { useState } from "react"
 import { X, Loader2 } from "lucide-react"
-import { createAsset, type Asset } from "@/lib/api"
+import { useStore } from "@/lib/store"
+import { useToast } from "@/lib/toast"
 
 interface AssetModalProps {
   open: boolean
   onClose: () => void
-  onCreated: (asset: Asset) => void
 }
 
 const TYPES = ["Servidor", "Notebook", "Desktop", "Switch", "Roteador", "Firewall", "Access Point", "Impressora"]
 
-export function AssetModal({ open, onClose, onCreated }: AssetModalProps) {
+export function AssetModal({ open, onClose }: AssetModalProps) {
+  const { addAsset } = useStore()
+  const { push } = useToast()
   const [name, setName] = useState("")
   const [type, setType] = useState(TYPES[0])
   const [ip, setIp] = useState("")
@@ -31,10 +33,14 @@ export function AssetModal({ open, onClose, onCreated }: AssetModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    // POST na API (Flask)
-    const created = await createAsset({ name, type, ip, owner, status: "online" })
+    // Adiciona ao estado global (POST na API Flask) e registra log
+    const created = await addAsset({ name, type, ip, owner, status: "online" })
     setSaving(false)
-    onCreated(created)
+    push({
+      type: "success",
+      title: "Ativo cadastrado",
+      description: `${created.name} (${created.id}) foi adicionado ao inventário.`,
+    })
     reset()
     onClose()
   }
