@@ -27,11 +27,20 @@ function StatCard({ label, value, hint, icon: Icon, accent }: any) {
 }
 
 function LiveClock() {
-  const [now, setNow] = useState(() => new Date())
+  // 1. Inicializamos com null para evitar que o servidor tente adivinhar a hora
+  const [now, setNow] = useState<Date | null>(null)
+
   useEffect(() => {
+    // 2. Só pegamos a hora exata depois que o componente carrega no navegador do usuário
+    setNow(new Date())
     const timer = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
+
+  // 3. Se for o servidor renderizando, mostra um "esqueleto" piscando (efeito pulse do Tailwind)
+  if (!now) {
+    return <div className="h-8 w-32 animate-pulse rounded bg-secondary/50" />
+  }
 
   return (
     <div className="flex items-baseline gap-2">
