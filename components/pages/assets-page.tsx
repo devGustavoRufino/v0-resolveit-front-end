@@ -7,28 +7,25 @@ import { StatusBadge } from "@/components/status-badge"
 import { AssetModal } from "@/components/asset-modal"
 
 export function AssetsPage() {
-  const { assets, loading } = useStore()
+  const { devices, loading } = useStore()
   const [query, setQuery] = useState("")
   const [modalOpen, setModalOpen] = useState(false)
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
-    if (!q) return assets
-    // Filtra por nome ou IP enquanto o usuário digita
-    return assets.filter(
+    if (!q) return devices
+    return devices.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         a.ip.toLowerCase().includes(q) ||
-        a.id.toLowerCase().includes(q) ||
-        a.type.toLowerCase().includes(q) ||
-        a.owner.toLowerCase().includes(q),
+        String(a.id).includes(q) ||
+        a.type.toLowerCase().includes(q),
     )
-  }, [assets, query])
+  }, [devices, query])
 
   return (
     <div className="space-y-6 p-8">
       <div className="rounded-xl border border-border bg-card">
-        {/* Cabeçalho da tabela */}
         <div className="flex flex-col gap-4 border-b border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -36,7 +33,7 @@ export function AssetsPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Pesquisar por nome ou IP..."
-              className="w-full rounded-lg border border-border bg-input py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-border bg-input py-2 pl-9 pr-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
           <button
@@ -48,7 +45,6 @@ export function AssetsPage() {
           </button>
         </div>
 
-        {/* Tabela */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -57,24 +53,14 @@ export function AssetsPage() {
                 <th className="px-6 py-3 font-medium">Nome</th>
                 <th className="px-6 py-3 font-medium">Tipo</th>
                 <th className="px-6 py-3 font-medium">IP</th>
-                <th className="px-6 py-3 font-medium">Responsável</th>
-                <th className="px-6 py-3 font-medium">Status</th>
+                <th className="px-6 py-3 font-medium">User ID</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-muted-foreground">
-                    Carregando ativos...
-                  </td>
-                </tr>
+                <tr><td colSpan={5} className="px-6 py-10 text-center text-muted-foreground">Carregando...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-muted-foreground">
-                    <Server className="mx-auto mb-2 size-6 opacity-50" />
-                    Nenhum ativo encontrado.
-                  </td>
-                </tr>
+                <tr><td colSpan={5} className="px-6 py-10 text-center text-muted-foreground">Nenhum ativo encontrado.</td></tr>
               ) : (
                 filtered.map((a) => (
                   <tr key={a.id} className="border-b border-border/60 last:border-0 hover:bg-secondary/40">
@@ -82,22 +68,14 @@ export function AssetsPage() {
                     <td className="px-6 py-3.5 font-medium text-foreground">{a.name}</td>
                     <td className="px-6 py-3.5 text-muted-foreground">{a.type}</td>
                     <td className="px-6 py-3.5 font-mono text-xs text-muted-foreground">{a.ip}</td>
-                    <td className="px-6 py-3.5 text-foreground">{a.owner}</td>
-                    <td className="px-6 py-3.5">
-                      <StatusBadge status={a.status ?? "online"} />
-                    </td>
+                    <td className="px-6 py-3.5 text-foreground">{a.user_id}</td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-
-        <div className="border-t border-border px-6 py-3 text-xs text-muted-foreground">
-          {filtered.length} de {assets.length} ativos
-        </div>
       </div>
-
       <AssetModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
   )

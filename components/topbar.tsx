@@ -14,12 +14,12 @@ interface TopbarProps {
 }
 
 export function Topbar({ title, subtitle, onNavigate }: TopbarProps) {
-  const { user } = useStore()
+  const { users } = useStore()
+  const user = users[0] || { name: "Administrador", email: "admin@resolveit.io", initials: "AD" }
   const { push } = useToast()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  // Fecha o dropdown ao clicar fora
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -27,6 +27,22 @@ export function Topbar({ title, subtitle, onNavigate }: TopbarProps) {
     document.addEventListener("mousedown", handleClick)
     return () => document.removeEventListener("mousedown", handleClick)
   }, [])
+
+  // AÇÃO: Acessar ServiceNow
+  const handleServiceNowRedirect = () => {
+    setOpen(false)
+    // TROQUE PELA URL DA SUA INSTÂNCIA DO SERVICENOW
+    window.open("https://sua-instancia.service-now.com", "_blank")
+    push({ type: "info", title: "Redirecionando...", description: "Abrindo portal ServiceNow" })
+  }
+
+  // AÇÃO: Logout
+  const handleLogout = () => {
+    setOpen(false)
+    push({ type: "info", title: "Saindo...", description: "Encerrando sessão..." })
+    // Recarrega a página para limpar o estado global da memória (Zustand/Context)
+    setTimeout(() => window.location.reload(), 1000)
+  }
 
   return (
     <header className="flex items-center justify-between border-b border-border bg-card/40 px-8 py-5">
@@ -39,8 +55,6 @@ export function Topbar({ title, subtitle, onNavigate }: TopbarProps) {
         <button
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-3 rounded-full py-1 pl-3 pr-1.5 transition-colors hover:bg-secondary"
-          aria-haspopup="menu"
-          aria-expanded={open}
         >
           <div className="hidden text-right sm:block">
             <p className="text-sm font-medium text-foreground">{user.name}</p>
@@ -49,17 +63,11 @@ export function Topbar({ title, subtitle, onNavigate }: TopbarProps) {
           <div className="flex size-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
             {user.initials}
           </div>
-          <ChevronDown
-            className={cn("size-4 text-muted-foreground transition-transform", open && "rotate-180")}
-          />
+          <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", open && "rotate-180")} />
         </button>
 
         {open && (
-          <div
-            role="menu"
-            className="absolute right-0 z-50 mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-border bg-card shadow-2xl animate-in fade-in slide-in-from-top-2 duration-150"
-          >
-            {/* Cabeçalho do usuário */}
+          <div className="absolute right-0 z-50 mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-border bg-card shadow-2xl animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-3 border-b border-border px-4 py-4">
               <div className="flex size-11 items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground">
                 {user.initials}
@@ -70,44 +78,14 @@ export function Topbar({ title, subtitle, onNavigate }: TopbarProps) {
               </div>
             </div>
 
-            {/* Opções */}
             <div className="py-1.5">
-              <MenuItem
-                icon={UserCircle}
-                label="Configurações da Conta"
-                onClick={() => {
-                  setOpen(false)
-                  push({ type: "info", title: "Configurações da Conta", description: "Abrindo preferências do perfil..." })
-                }}
-              />
-              <MenuItem
-                icon={Settings}
-                label="Preferências do Sistema"
-                onClick={() => {
-                  setOpen(false)
-                  push({ type: "info", title: "Preferências", description: "Painel de preferências em breve." })
-                }}
-              />
-              <MenuItem
-                icon={ExternalLink}
-                label="Acessar ServiceNow"
-                onClick={() => {
-                  setOpen(false)
-                  push({ type: "success", title: "ServiceNow", description: "Redirecionando para o portal ServiceNow..." })
-                }}
-              />
+              <MenuItem icon={UserCircle} label="Configurações da Conta" onClick={() => setOpen(false)} />
+              <MenuItem icon={Settings} label="Preferências do Sistema" onClick={() => setOpen(false)} />
+              <MenuItem icon={ExternalLink} label="Acessar ServiceNow" onClick={handleServiceNowRedirect} />
             </div>
 
             <div className="border-t border-border py-1.5">
-              <MenuItem
-                icon={LogOut}
-                label="Sair"
-                destructive
-                onClick={() => {
-                  setOpen(false)
-                  push({ type: "info", title: "Sessão encerrada", description: "Você saiu da sua conta." })
-                }}
-              />
+              <MenuItem icon={LogOut} label="Sair" destructive onClick={handleLogout} />
             </div>
           </div>
         )}
@@ -116,26 +94,13 @@ export function Topbar({ title, subtitle, onNavigate }: TopbarProps) {
   )
 }
 
-function MenuItem({
-  icon: Icon,
-  label,
-  onClick,
-  destructive,
-}: {
-  icon: typeof Settings
-  label: string
-  onClick: () => void
-  destructive?: boolean
-}) {
+function MenuItem({ icon: Icon, label, onClick, destructive }: any) {
   return (
     <button
-      role="menuitem"
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors",
-        destructive
-          ? "text-destructive hover:bg-destructive/10"
-          : "text-foreground hover:bg-secondary",
+        destructive ? "text-destructive hover:bg-destructive/10" : "text-foreground hover:bg-secondary",
       )}
     >
       <Icon className="size-4 shrink-0" />

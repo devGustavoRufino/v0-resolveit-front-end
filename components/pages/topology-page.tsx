@@ -2,24 +2,14 @@
 
 import { ArrowRight, Server, Router, Wifi, Laptop, ShieldAlert, Network as NetworkIcon } from "lucide-react"
 import { useStore } from "@/lib/store"
+import { useMemo } from "react"
 
 function deviceIcon(type: string) {
-  switch (type) {
-    case "Servidor":
-      return Server
-    case "Switch":
-    case "Roteador":
-      return Router
-    case "Access Point":
-      return Wifi
-    case "Notebook":
-    case "Desktop":
-      return Laptop
-    case "Firewall":
-      return ShieldAlert
-    default:
-      return NetworkIcon
-  }
+  // Ajustado para os nomes reais que vi no seu Supabase
+  if (type.includes("personal_computer")) return Laptop
+  if (type.includes("server")) return Server
+  if (type.includes("switch")) return Router
+  return NetworkIcon
 }
 
 function DeviceNode({ name, type }: { name: string; type: string }) {
@@ -38,41 +28,46 @@ function DeviceNode({ name, type }: { name: string; type: string }) {
 }
 
 export function TopologyPage() {
-  const { connections, loading } = useStore()
+  const { connections, devices, loading } = useStore()
+
+  // Cruza IDs das conexões com a lista de dispositivos para obter nomes/tipos
+  const processedConnections = useMemo(() => {
+    return connections.map((c) => {
+      const sourceDev = devices.find((d) => d.id === c.source_id)
+      const targetDev = devices.find((d) => d.id === c.destination_id)
+      return {
+        ...c,
+        sourceName: sourceDev?.name || "Desconhecido",
+        sourceType: sourceDev?.type || "N/A",
+        targetName: targetDev?.name || "Desconhecido",
+        targetType: targetDev?.type || "N/A",
+      }
+    })
+  }, [connections, devices])
 
   return (
     <div className="space-y-6 p-8">
       <div className="rounded-xl border border-border bg-card">
         <div className="border-b border-border px-6 py-4">
           <h2 className="text-base font-semibold text-foreground">Conexões de Rede</h2>
-          <p className="text-sm text-muted-foreground">
-            Mapeamento de dispositivos por origem e destino
-          </p>
+          <p className="text-sm text-muted-foreground">Mapa lógico de dependências</p>
         </div>
 
         <div className="divide-y divide-border/60">
           {loading ? (
-            <p className="px-6 py-10 text-center text-muted-foreground">Carregando topologia...</p>
+            <p className="px-6 py-10 text-center text-muted-foreground">Carregando...</p>
           ) : (
-            connections.map((c) => (
+            processedConnections.map((c) => (
               <div key={c.id} className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center">
-                <DeviceNode name={c.source} type={c.sourceType} />
-
+                <DeviceNode name={c.sourceName} type={c.sourceType} />
                 <div className="flex shrink-0 flex-col items-center px-2">
                   <ArrowRight className="size-5 text-primary" />
-                  <span className="mt-1 whitespace-nowrap text-xs text-muted-foreground">
-                    {c.protocol}
-                  </span>
+                  <span className="mt-1 text-xs text-muted-foreground">{c.type}</span>
                 </div>
-
-                <DeviceNode name={c.target} type={c.targetType} />
+                <DeviceNode name={c.targetName} type={c.targetType} />
               </div>
             ))
           )}
-        </div>
-
-        <div className="border-t border-border px-6 py-3 text-xs text-muted-foreground">
-          {connections.length} conexões mapeadas
         </div>
       </div>
     </div>
