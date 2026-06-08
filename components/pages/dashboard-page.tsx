@@ -27,18 +27,11 @@ function StatCard({ label, value, hint, icon: Icon, accent }: any) {
 }
 
 function LiveClock() {
-  const [now, setNow] = useState<Date | null>(null)
-
+  const [now, setNow] = useState(() => new Date())
   useEffect(() => {
-    setNow(new Date())
     const timer = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
-
-  // Se o 'now' for nulo (renderização no servidor), mostra um espaço vazio para não dar conflito de fuso horário
-  if (!now) {
-    return <div className="h-8 w-32 animate-pulse rounded bg-secondary/50" />
-  }
 
   return (
     <div className="flex items-baseline gap-2">
