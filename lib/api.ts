@@ -111,6 +111,12 @@ export async function createIncident(p: IncidentPayload): Promise<Incident> {
   }); 
 }
 
+export async function getUsers(): Promise<User[]> { return fetchApi<User[]>("/api/user") }
+export async function getDevices(): Promise<Device[]> { return fetchApi<Device[]>("/api/device") }
+export async function getLogs(): Promise<Log[]> { return fetchApi<Log[]>("/api/log") }
+export async function getConnections(): Promise<Connection[]> { return fetchApi<Connection[]>("/api/connection") }
+export async function createDevice(p: DevicePayload): Promise<Device> { return fetchApi<Device>("/api/device", { method: "POST", body: JSON.stringify(p) }) }
+export async function createIncident(p: IncidentPayload): Promise<Incident> { return fetchApi<Incident>("/api/incident", { method: "POST", body: JSON.stringify(p) }) }
 // Nova função utilitária para chamar o sincronismo do ServiceNow que criamos antes
 export async function syncServiceNowDevices(): Promise<{ message: string; inserted: number; updated: number }> {
   return fetchApi<{ message: string; inserted: number; updated: number }>("/api/device/sync/servicenow", { 
