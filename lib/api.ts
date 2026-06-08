@@ -1,5 +1,5 @@
 // lib/api.ts
-export const API_BASE_URL = "http://localhost:5000"
+export const API_BASE_URL = "https://python-api-itom.onrender.com"
 
 export interface User { id: number; name: string; email: string; role: string }
 export interface Device { id: number; name: string; type: string; ip: string; user_id: number }
