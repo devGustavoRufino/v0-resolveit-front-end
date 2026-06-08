@@ -14,7 +14,8 @@ interface TopbarProps {
 }
 
 export function Topbar({ title, subtitle, onNavigate }: TopbarProps) {
-  const { user } = useStore()
+  const { users } = useStore()
+  const user = users[0] || { name: "Administrador", email: "admin@resolveit.io", initials: "AD" }
   const { push } = useToast()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
