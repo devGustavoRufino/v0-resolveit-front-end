@@ -1,10 +1,13 @@
 // 🛑 MODO MOCK ATIVADO: Simulando a API para focar no Front-end
 
-// Simulador de delay (para a tela de loading do seu sistema aparecer bonitinha)
+// Simulador de delay para as telas de loading
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Interfaces baseadas no que o seu Dashboard consome
-export interface Device {
+// ---------------------------------------------------------
+// INTERFACES (Exatamente os nomes que o store.tsx pede)
+// ---------------------------------------------------------
+
+export interface Asset {
   id: number;
   name: string;
   ip_address: string;
@@ -13,19 +16,12 @@ export interface Device {
   location?: string;
 }
 
-export interface Log {
+export interface IntegrationLog {
   id: number;
   date_hour: string;
   operation: string;
   description: string;
-  status: "Sucesso" | "Erro" | "Alerta" | string;
-}
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
+  status: string;
 }
 
 export interface Connection {
@@ -35,12 +31,19 @@ export interface Connection {
   status: string;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
 // ---------------------------------------------------------
-// FUNÇÕES MOCKADAS (Substituem o fetch real)
+// FUNÇÕES MOCKADAS (Exatamente os nomes que o store.tsx pede)
 // ---------------------------------------------------------
 
-export async function getDevices(): Promise<Device[]> {
-  await delay(800); // Simulando rede
+export async function getAssets(): Promise<Asset[]> {
+  await delay(800); 
   return [
     { id: 1, name: "SRV-BD-PROD-01", ip_address: "10.0.0.15", type: "Servidor", status: "Ativo", location: "Datacenter A" },
     { id: 2, name: "SW-CORE-RECIFE", ip_address: "10.0.1.1", type: "Switch", status: "Ativo", location: "Rack 02" },
@@ -49,21 +52,13 @@ export async function getDevices(): Promise<Device[]> {
   ];
 }
 
-export async function getLogs(): Promise<Log[]> {
+export async function getIntegrationLogs(): Promise<IntegrationLog[]> {
   await delay(600);
   return [
     { id: 101, date_hour: "08/06/2026 14:15:00", operation: "Sincronização", description: "Ativos sincronizados com a CMDB do ServiceNow", status: "Sucesso" },
     { id: 102, date_hour: "08/06/2026 15:30:22", operation: "Criação de Incidente", description: "Criado INC0010923 para RT-BGP-EDGE", status: "Sucesso" },
     { id: 103, date_hour: "08/06/2026 16:45:10", operation: "Alerta de Monitoramento", description: "Perda de pacotes detectada no SW-CORE-RECIFE", status: "Alerta" },
     { id: 104, date_hour: "08/06/2026 17:01:05", operation: "Autenticação", description: "Falha de login de usuário administrador", status: "Erro" },
-  ];
-}
-
-export async function getUsers(): Promise<User[]> {
-  await delay(400);
-  return [
-    { id: 1, name: "Administrador Sistema", email: "admin@resolveit.io", role: "Admin" },
-    { id: 2, name: "Operador N1", email: "operador@resolveit.io", role: "User" },
   ];
 }
 
@@ -75,8 +70,14 @@ export async function getConnections(): Promise<Connection[]> {
   ];
 }
 
+export async function createAsset(payload: any): Promise<Asset> {
+  await delay(1000);
+  // Simula a criação devolvendo o que foi enviado + um ID aleatório
+  return { id: Math.floor(Math.random() * 1000), ...payload };
+}
+
 export async function createIncident(payload: any): Promise<any> {
-  await delay(1200); // Demora um pouco mais simulando o POST pro ServiceNow
+  await delay(1200);
   return {
     success: true,
     incident_number: `INC00${Math.floor(Math.random() * 10000)}`,
@@ -84,11 +85,14 @@ export async function createIncident(payload: any): Promise<any> {
   };
 }
 
+export async function getUsers(): Promise<User[]> {
+  await delay(400);
+  return [
+    { id: 1, name: "Administrador Sistema", email: "admin@resolveit.io", role: "Admin" },
+  ];
+}
+
 export async function syncServiceNowDevices(): Promise<any> {
   await delay(1500);
-  return {
-    message: "Sincronização concluída",
-    inserted: 2,
-    updated: 4,
-  };
+  return { message: "Sincronização concluída", inserted: 2, updated: 4 };
 }
