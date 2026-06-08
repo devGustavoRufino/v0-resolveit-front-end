@@ -19,9 +19,9 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
   return (await res.json()) as T
 }
 
-export async function getUsers(): Promise<User[]> { return fetchApi<User[]>("/api/users") }
-export async function getDevices(): Promise<Device[]> { return fetchApi<Device[]>("/api/devices") }
-export async function getLogs(): Promise<Log[]> { return fetchApi<Log[]>("/api/logs") }
-export async function getConnections(): Promise<Connection[]> { return fetchApi<Connection[]>("/api/connections") }
-export async function createDevice(p: DevicePayload): Promise<Device> { return fetchApi<Device>("/api/devices", { method: "POST", body: JSON.stringify(p) }) }
-export async function createIncident(p: IncidentPayload): Promise<Incident> { return fetchApi<Incident>("/api/incidents", { method: "POST", body: JSON.stringify(p) }) }
+export async function getUsers(): Promise<User[]> { return fetchApi<User[]>("/api/user") }
+export async function getDevices(): Promise<Device[]> { return fetchApi<Device[]>("/api/device") }
+export async function getLogs(): Promise<Log[]> { return fetchApi<Log[]>("/api/log") }
+export async function getConnections(): Promise<Connection[]> { return fetchApi<Connection[]>("/api/connection") }
+export async function createDevice(p: DevicePayload): Promise<Device> { return fetchApi<Device>("/api/device", { method: "POST", body: JSON.stringify(p) }) }
+export async function createIncident(p: IncidentPayload): Promise<Incident> { return fetchApi<Incident>("/api/incident", { method: "POST", body: JSON.stringify(p) }) }
